@@ -1,12 +1,11 @@
 package com.twu.refactoring;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.TimeZone;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class DateParser {
-    private final String dateAndTimeString;
+    private final String dataTime;
     private static final HashMap<String, TimeZone> KNOWN_TIME_ZONES = new HashMap<String, TimeZone>();
 
     static {
@@ -16,78 +15,29 @@ public class DateParser {
     /**
      * Takes a date in ISO 8601 format and returns a date
      *
-     * @param dateAndTimeString - should be in format ISO 8601 format
-     *                          examples -
-     *                          2012-06-17 is 17th June 2012 - 00:00 in UTC TimeZone
-     *                          2012-06-17TZ is 17th June 2012 - 00:00 in UTC TimeZone
-     *                          2012-06-17T15:00Z is 17th June 2012 - 15:00 in UTC TimeZone
+     * @param dataTime - should be in format ISO 8601 format
+     *                 examples -
+     *                 2012-06-17 is 17th June 2012 - 00:00 in UTC TimeZone
+     *                 2012-06-17TZ is 17th June 2012 - 00:00 in UTC TimeZone
+     *                 2012-06-17T15:00Z is 17th June 2012 - 15:00 in UTC TimeZone
      */
-    public DateParser(String dateAndTimeString) {
-        this.dateAndTimeString = dateAndTimeString;
+    public DateParser(String dataTime) {
+        this.dataTime = dataTime;
     }
 
     public Date parse() {
         int year, month, date, hour, minute;
 
-        try {
-            String yearString = dateAndTimeString.substring(0, 4);
-            year = Integer.parseInt(yearString);
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("Year string is less than 4 characters");
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Year is not an integer");
-        }
-        if (year < 2000 || year > 2012)
-            throw new IllegalArgumentException("Year cannot be less than 2000 or more than 2012");
+        year = checkUtil("Year", 0, 4, 2000, 2012);
+        month = checkUtil("Month", 5, 7, 1, 12);
+        date = checkUtil("Date", 8, 10, 1, 31);
 
-        try {
-            String monthString = dateAndTimeString.substring(5, 7);
-            month = Integer.parseInt(monthString);
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("Month string is less than 2 characters");
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Month is not an integer");
-        }
-        if (month < 1 || month > 12)
-            throw new IllegalArgumentException("Month cannot be less than 1 or more than 12");
-
-        try {
-            String dateString = dateAndTimeString.substring(8, 10);
-            date = Integer.parseInt(dateString);
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("Date string is less than 2 characters");
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Date is not an integer");
-        }
-        if (date < 1 || date > 31)
-            throw new IllegalArgumentException("Date cannot be less than 1 or more than 31");
-
-        if (dateAndTimeString.substring(11, 12).equals("Z")) {
+        if (dataTime.substring(11, 12).equals("Z")) {
             hour = 0;
             minute = 0;
         } else {
-            try {
-                String hourString = dateAndTimeString.substring(11, 13);
-                hour = Integer.parseInt(hourString);
-            } catch (StringIndexOutOfBoundsException e) {
-                throw new IllegalArgumentException("Hour string is less than 2 characters");
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Hour is not an integer");
-            }
-            if (hour < 0 || hour > 23)
-                throw new IllegalArgumentException("Hour cannot be less than 0 or more than 23");
-
-            try {
-                String minuteString = dateAndTimeString.substring(14, 16);
-                minute = Integer.parseInt(minuteString);
-            } catch (StringIndexOutOfBoundsException e) {
-                throw new IllegalArgumentException("Minute string is less than 2 characters");
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Minute is not an integer");
-            }
-            if (minute < 0 || minute > 59)
-                throw new IllegalArgumentException("Minute cannot be less than 0 or more than 59");
-
+            hour = checkUtil("Hour", 11, 13, 0, 23);
+            minute = checkUtil("Minute", 14, 16, 0, 59);
         }
 
         Calendar calendar = Calendar.getInstance();
@@ -95,5 +45,24 @@ public class DateParser {
         calendar.set(year, month - 1, date, hour, minute, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
+    }
+
+
+    public int checkUtil(String timeType, int start, int end, int minValue, int maxValue) {
+        int result;
+        try {
+            String resultString = dataTime.substring(start, end);
+            result = Integer.parseInt(resultString);
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(String.format("%s string is less than %d characters", timeType, end - start));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format("%s is not an integer", timeType));
+        }
+
+        if (result < minValue || result > maxValue) {
+            throw new IllegalArgumentException(String.format("%s cannot be less than %d or more than %d", timeType, minValue, maxValue));
+        }
+
+        return result;
     }
 }
