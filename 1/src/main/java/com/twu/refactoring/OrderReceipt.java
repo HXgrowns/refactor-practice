@@ -7,7 +7,7 @@ package com.twu.refactoring;
  * total sales tax) and prints it.
  */
 public class OrderReceipt {
-    private Order order;
+    private final Order order;
     private final double SALES_TAX = .10;
 
     public OrderReceipt(Order order) {
@@ -39,9 +39,9 @@ public class OrderReceipt {
             total += lineItem.totalAmount() + salesTax;
         }
 
-        output.append("Sales Tax \t").append(totSalesTx);
+        output.append("Sales Tax").append('\t').append(totSalesTx);
 
-        output.append("Total Amount \t").append(total);
+        output.append("Total Amount").append('\t').append(total);
         return output.toString();
     }
 }
