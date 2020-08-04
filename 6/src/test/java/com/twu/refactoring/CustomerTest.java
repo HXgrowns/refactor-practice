@@ -8,6 +8,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -15,24 +18,24 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class CustomerTest {
 
 
-	private static final String GOLD_PATH = "data/";
+    private static final String GOLD_PATH = "data/";
 
     private Customer dinsdale = new Customer("Dinsdale Pirhana");
 
-    private Movie python = new Movie("Monty Python and the Holy Grail", Movie.REGULAR);
-	private Movie ran = new Movie("Ran", Movie.REGULAR);
-	private Movie la = new Movie("LA Confidential", Movie.NEW_RELEASE);
-	private Movie trek = new Movie("Star Trek 13.2", Movie.NEW_RELEASE);
-	private Movie wallace = new Movie("Wallace and Gromit", Movie.CHILDRENS);
+    private List<Movie> movies = new ArrayList<>(Arrays.asList(new Movie("Monty Python and the Holy Grail", Movie.REGULAR),
+            new Movie("Ran", Movie.REGULAR),
+            new Movie("LA Confidential", Movie.NEW_RELEASE),
+            new Movie("Star Trek 13.2", Movie.NEW_RELEASE),
+            new Movie("Wallace and Gromit", Movie.CHILDRENS)));
 
     @BeforeEach
-    public void setUpData(){
-       dinsdale.addRental(new Rental (python, 3));
-       dinsdale.addRental(new Rental (ran, 1));
-       dinsdale.addRental(new Rental (la, 2));
-       dinsdale.addRental(new Rental (trek, 1));
-       dinsdale.addRental(new Rental (wallace, 6));
-   }
+    public void setUpData() {
+        dinsdale.addRental(new Rental(movies.get(0), 3));
+        dinsdale.addRental(new Rental(movies.get(1), 1));
+        dinsdale.addRental(new Rental(movies.get(2), 2));
+        dinsdale.addRental(new Rental(movies.get(3), 1));
+        dinsdale.addRental(new Rental(movies.get(4), 6));
+    }
 
     @Test
     public void shouldOutputEmptyStatement() throws Exception {
@@ -47,16 +50,16 @@ public class CustomerTest {
 
     @Test
     public void shouldOutputChangedStatement() throws Exception {
-        la.setPriceCode(Movie.REGULAR);
+        movies.get(2).setPriceCode(Movie.REGULAR);
         verifyOutput(dinsdale.statement(), "outputChange");
     }
 
-    protected void verifyOutput(String actualValue, String fileName) throws IOException{
+    protected void verifyOutput(String actualValue, String fileName) throws IOException {
         String filePath = getClass().getClassLoader().getResource(GOLD_PATH + fileName).getPath();
-        BufferedReader file = new BufferedReader (new FileReader (filePath));
-        BufferedReader actualStream = new BufferedReader (new StringReader (actualValue));
+        BufferedReader file = new BufferedReader(new FileReader(filePath));
+        BufferedReader actualStream = new BufferedReader(new StringReader(actualValue));
         String thisFileLine;
-        while  ((thisFileLine = file.readLine()) != null) {
+        while ((thisFileLine = file.readLine()) != null) {
             assertThat("in file: " + fileName, actualStream.readLine(), equalTo(thisFileLine));
         }
     }
